@@ -32,6 +32,10 @@ export default function RootLayout({ children }) {
     // }}
     >
       <html lang="en">
+      <head>
+        <link rel="icon" type="image/png" href="/favicon.png" />
+
+      </head>
         <body
           className={`${inter.className} bg-gradient-to-b from-orange-50 via-amber-50 to-orange-50`}
         >
