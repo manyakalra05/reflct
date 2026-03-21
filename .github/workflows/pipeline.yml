@@ -11,7 +11,7 @@ jobs:
     steps:
     # 🟢 STEP 1 - Checkout
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     # 🟢 STEP 2 - Install dependencies
     - name: Install dependencies
@@ -21,36 +21,42 @@ jobs:
     - name: Run ESLint
       run: npm run lint || true
 
-    # 🟢 STEP 4 - Build check (IMPORTANT)
+    # 🟢 STEP 4 - Build check
     - name: Build project
-      run: npm run build
       env:
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
         CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         ARCJET_KEY: ${{ secrets.ARCJET_KEY }}
         PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      run: npm run build
 
     # 🟢 STEP 5 - Prisma validation
     - name: Validate Prisma schema
       run: npx prisma validate
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-    # 🔐 STEP 6 - Secret detection
-    - name: Secret scan
+    # 🔐 STEP 6 - Smart Secret Detection (FIXED)
+    - name: Secret scan (improved)
       run: |
-        if grep -r "API_KEY" .; then
-          echo "❌ Hardcoded API key found"
-          exit 1
-        fi
-        if grep -r "DATABASE_URL=" .; then
-          echo "❌ DB URL exposed"
-          exit 1
-        fi
-        echo "✅ No secrets found"
+        echo "🔍 Scanning for exposed secrets..."
 
-    # 🔐 STEP 7 - .env protection
+        # Scan only important folders
+        FILES=$(find . -type f \
+          ! -path "./node_modules/*" \
+          ! -path "./.git/*" \
+          ! -path "./.next/*")
+
+        for file in $FILES; do
+          # Detect hardcoded keys (but ignore process.env usage)
+          if grep -qE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=\s*['\"]" "$file"; then
+            echo "❌ Hardcoded secret found in $file"
+            exit 1
+          fi
+        done
+
+        echo "✅ No hardcoded secrets detected"
+
+    # 🔐 STEP 7 - Block .env file
     - name: Block .env file
       run: |
         if [ -f ".env" ]; then
@@ -62,15 +68,19 @@ jobs:
     - name: Audit dependencies
       run: npm audit --audit-level=high || true
 
-    # 🧠 STEP 9 - Smart scan (your research idea)
-    - name: Custom security scan
+    # 🧠 STEP 9 - Smart scan (research feature)
+    - name: Context-aware scan
       run: |
-        echo "Running smart scan..."
-        if grep -r "password" .; then
-          echo "⚠️ Possible sensitive keyword found"
-        fi
+        echo "🧠 Running smart scan..."
 
-    # 🔵 STEP 10 - Deploy trigger (ONLY main)
+        # Example: detect unsafe patterns but don't fail
+        grep -r "password" . \
+          --exclude-dir=node_modules \
+          --exclude-dir=.git \
+          --exclude-dir=.next \
+          && echo "⚠️ Review recommended"
+
+    # 🔵 STEP 10 - Deploy (ONLY main branch)
     - name: Trigger Vercel Deploy
       if: github.ref == 'refs/heads/main'
       run: |
