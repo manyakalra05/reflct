@@ -1,0 +1,73 @@
+name: Full DevSecOps Pipeline
+
+on:
+  push:
+    branches: ["main", "dev"]
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 🟢 STEP 1 - Checkout
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 🟢 STEP 2 - Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # 🟢 STEP 3 - Lint check
+    - name: Run ESLint
+      run: npm run lint || true
+
+    # 🟢 STEP 4 - Build check (IMPORTANT)
+    - name: Build project
+      run: npm run build
+
+    # 🟢 STEP 5 - Prisma validation
+    - name: Validate Prisma schema
+      run: npx prisma validate
+
+    # 🔐 STEP 6 - Secret detection
+    - name: Secret scan
+      run: |
+        if grep -r "API_KEY" .; then
+          echo "❌ Hardcoded API key found"
+          exit 1
+        fi
+        if grep -r "DATABASE_URL" .; then
+          echo "❌ DB URL exposed"
+          exit 1
+        fi
+        echo "✅ No secrets found"
+
+    # 🔐 STEP 7 - .env protection
+    - name: Block .env file
+      run: |
+        if [ -f ".env" ]; then
+          echo "❌ .env file detected!"
+          exit 1
+        fi
+
+    # 🔐 STEP 8 - Dependency vulnerabilities
+    - name: Audit dependencies
+      run: npm audit --audit-level=high || true
+
+    # 🧠 STEP 9 - Smart scan (your research idea)
+    - name: Custom security scan
+      run: |
+        echo "Running smart scan..."
+        if grep -r "password" .; then
+          echo "⚠️ Possible sensitive keyword found"
+        fi
+
+    # 🔵 STEP 10 - Deploy trigger (ONLY main)
+    - name: Trigger Vercel Deploy
+      if: github.ref == 'refs/heads/main'
+      run: |
+        curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
+
+    # 🔴 STEP 11 - Final log
+    - name: Done
+      run: echo "🚀 Pipeline finished"
