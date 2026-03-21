@@ -8,6 +8,14 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
 
+    # 🌍 GLOBAL ENV (applies to ALL steps)
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      ARCJET_KEY: ${{ secrets.ARCJET_KEY }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+
     steps:
     # 🟢 STEP 1 - Checkout
     - name: Checkout code
@@ -23,15 +31,9 @@ jobs:
 
     # 🟢 STEP 4 - Build check
     - name: Build project
-      env:
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-        CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        ARCJET_KEY: ${{ secrets.ARCJET_KEY }}
-        PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       run: npm run build
 
-    # 🟢 STEP 5 - Prisma validation
+    # 🟢 STEP 5 - Prisma validation (FIXED)
     - name: Validate Prisma schema
       run: npx prisma validate
 
@@ -40,14 +42,12 @@ jobs:
       run: |
         echo "🔍 Scanning for exposed secrets..."
 
-        # Scan only important folders
         FILES=$(find . -type f \
           ! -path "./node_modules/*" \
           ! -path "./.git/*" \
           ! -path "./.next/*")
 
         for file in $FILES; do
-          # Detect hardcoded keys (but ignore process.env usage)
           if grep -qE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=\s*['\"]" "$file"; then
             echo "❌ Hardcoded secret found in $file"
             exit 1
@@ -68,12 +68,11 @@ jobs:
     - name: Audit dependencies
       run: npm audit --audit-level=high || true
 
-    # 🧠 STEP 9 - Smart scan (research feature)
+    # 🧠 STEP 9 - Context-aware scan (Research feature)
     - name: Context-aware scan
       run: |
         echo "🧠 Running smart scan..."
 
-        # Example: detect unsafe patterns but don't fail
         grep -r "password" . \
           --exclude-dir=node_modules \
           --exclude-dir=.git \
