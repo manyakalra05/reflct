@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+test deploy
+
 ## Getting Started
 
 First, run the development server:
@@ -34,21 +36,3 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-<!-- Update 2025-05-22T14:14:54+05:30 -->
-<!-- Update 2025-08-31T05:40:11+05:30 -->
-<!-- Update 2025-09-27T07:51:21+05:30 -->
-<!-- Update 2024-11-19T17:27:15+05:30 -->
-<!-- Update 2024-12-20T17:30:29+05:30 -->
-<!-- Update 2024-12-21T09:44:30+05:30 -->
-<!-- Update 2025-01-03T18:34:38+05:30 -->
-<!-- Update 2025-01-11T07:11:48+05:30 -->
-<!-- Update 2025-01-11T08:52:48+05:30 -->
-<!-- Update 2025-02-04T13:04:00+05:30 -->
-<!-- Update 2025-02-21T17:53:08+05:30 -->
-<!-- Update 2025-06-06T15:16:03+05:30 -->
-<!-- Update 2025-07-27T10:57:32+05:30 -->
-<!-- Update 2025-08-05T17:53:37+05:30 -->
-<!-- Update 2025-08-14T10:22:41+05:30 -->
-<!-- Update 2025-08-19T15:22:48+05:30 -->
-<!-- Update 2025-08-20T15:39:49+05:30 -->
