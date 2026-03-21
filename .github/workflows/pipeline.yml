@@ -11,7 +11,7 @@ jobs:
     steps:
     # 🟢 STEP 1 - Checkout
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # 🟢 STEP 2 - Install dependencies
     - name: Install dependencies
@@ -24,10 +24,18 @@ jobs:
     # 🟢 STEP 4 - Build check (IMPORTANT)
     - name: Build project
       run: npm run build
+      env:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+        CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        ARCJET_KEY: ${{ secrets.ARCJET_KEY }}
+        PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
 
     # 🟢 STEP 5 - Prisma validation
     - name: Validate Prisma schema
       run: npx prisma validate
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     # 🔐 STEP 6 - Secret detection
     - name: Secret scan
@@ -36,7 +44,7 @@ jobs:
           echo "❌ Hardcoded API key found"
           exit 1
         fi
-        if grep -r "DATABASE_URL" .; then
+        if grep -r "DATABASE_URL=" .; then
           echo "❌ DB URL exposed"
           exit 1
         fi
