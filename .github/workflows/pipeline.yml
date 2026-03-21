@@ -8,7 +8,6 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
 
-    # 🌍 GLOBAL ENV (applies to ALL steps)
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
@@ -33,11 +32,11 @@ jobs:
     - name: Build project
       run: npm run build
 
-    # 🟢 STEP 5 - Prisma validation (FIXED)
+    # 🟢 STEP 5 - Prisma validation
     - name: Validate Prisma schema
       run: npx prisma validate
 
-    # 🔐 STEP 6 - Smart Secret Detection (FIXED)
+    # 🔐 STEP 6 - Secret scan
     - name: Secret scan (improved)
       run: |
         echo "🔍 Scanning for exposed secrets..."
@@ -68,7 +67,7 @@ jobs:
     - name: Audit dependencies
       run: npm audit --audit-level=high || true
 
-    # 🧠 STEP 9 - Context-aware scan (Research feature)
+    # 🧠 STEP 9 - Context-aware scan
     - name: Context-aware scan
       run: |
         echo "🧠 Running smart scan..."
@@ -79,11 +78,27 @@ jobs:
           --exclude-dir=.next \
           && echo "⚠️ Review recommended"
 
-    # 🔵 STEP 10 - Deploy (ONLY main branch)
+    # 🔵 STEP 10 - Deploy (FIXED)
     - name: Trigger Vercel Deploy
       if: github.ref == 'refs/heads/main'
       run: |
-        curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        echo "🚀 Triggering Vercel deployment..."
+
+        if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          echo "❌ VERCEL_DEPLOY_HOOK is missing!"
+          exit 1
+        fi
+
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}")
+
+        echo "Vercel response code: $RESPONSE"
+
+        if [ "$RESPONSE" -ne 200 ] && [ "$RESPONSE" -ne 201 ]; then
+          echo "❌ Failed to trigger deployment"
+          exit 1
+        fi
+
+        echo "✅ Deployment triggered successfully"
 
     # 🔴 STEP 11 - Final log
     - name: Done
