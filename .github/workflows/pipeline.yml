@@ -62,7 +62,9 @@ jobs:
           --exclude-dir=node_modules \
           --exclude-dir=.git \
           --exclude-dir=.next \
-          && echo "Review recommended (not failing build)"
+          || true
+
+        echo "Secret scan completed (non-blocking)"
 
     # STEP 9 - Prevent .env commit
     - name: Block .env file
